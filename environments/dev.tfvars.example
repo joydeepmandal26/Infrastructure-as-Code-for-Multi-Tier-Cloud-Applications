@@ -1,0 +1,11 @@
+# DEV Environment — $0/month (AWS Free Tier Safe)
+environment                = "dev"
+cost_optimized_mode        = true
+ec2_instance_type          = "t2.micro"
+app_instance_count_min     = 1
+app_instance_count_desired = 1
+app_instance_count_max     = 2
+db_instance_class          = "db.t3.micro"
+db_allocated_storage       = 20
+multi_az                   = false
+cpu_alarm_threshold        = 70

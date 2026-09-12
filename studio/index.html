@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IaC Studio — Multi-Tier Cloud Visualizer</title>
+  <meta name="description" content="Interactive Infrastructure as Code studio with real-time 3-tier AWS architecture visualization, chaos engineering simulator, and FinOps cost estimator." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- TOP BAR -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">IaC <span class="logo-accent">Studio</span></span>
+      </div>
+      <div class="env-selector-wrap">
+        <label for="env-select">Environment</label>
+        <select id="env-select" class="env-select">
+          <option value="dev">🟢 dev — Free Tier ($0)</option>
+          <option value="prod">🟡 prod — High Availability</option>
+        </select>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <div class="status-badge" id="status-badge">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Ready</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="cost-badge" id="cost-badge" title="Estimated monthly AWS cost">
+        <span class="cost-icon">💰</span>
+        <span id="cost-value">$0.00</span>
+        <span class="cost-label">/ mo</span>
+      </div>
+      <div class="security-badge" id="security-badge" title="Security audit score">
+        <span class="sec-icon">🛡️</span>
+        <span id="sec-score">A+</span>
+      </div>
+      <button class="btn btn-ghost" id="btn-report" title="Export Review Summary">📄 Export</button>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="studio-layout">
+    <!-- LEFT PANEL: Code Studio -->
+    <section class="panel panel-code" id="panel-code">
+      <!-- File Tabs -->
+      <div class="file-tabs" id="file-tabs">
+        <button class="file-tab active" data-file="main">main.tf</button>
+        <button class="file-tab" data-file="variables">variables.tf</button>
+        <button class="file-tab" data-file="tfvars">terraform.tfvars</button>
+        <button class="file-tab" data-file="vpc">modules/vpc</button>
+        <button class="file-tab" data-file="compute">modules/compute</button>
+        <button class="file-tab" data-file="rds">modules/rds</button>
+      </div>
+
+      <!-- Code Editor Area -->
+      <div class="editor-wrap">
+        <div class="line-numbers" id="line-numbers"></div>
+        <textarea class="code-editor" id="code-editor" spellcheck="false" autocomplete="off"></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-bar">
+        <button class="btn btn-plan" id="btn-plan">▶ Plan</button>
+        <button class="btn btn-apply" id="btn-apply">🚀 Apply</button>
+        <button class="btn btn-destroy" id="btn-destroy">💥 Destroy</button>
+        <button class="btn btn-chaos" id="btn-chaos">⚡ Chaos</button>
+        <button class="btn btn-audit" id="btn-audit">🛡 Audit</button>
+      </div>
+
+      <!-- Terminal Console -->
+      <div class="terminal-wrap">
+        <div class="terminal-header">
+          <span class="terminal-title">▸ Terminal</span>
+          <button class="terminal-clear" id="btn-clear-terminal">clear</button>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+          <div class="term-line term-info">IaC Studio ready. Select an action to begin.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIVIDER -->
+    <div class="panel-divider" id="panel-divider"></div>
+
+    <!-- RIGHT PANEL: Topology + Metrics -->
+    <section class="panel panel-viz" id="panel-viz">
+      <!-- Tab Switcher -->
+      <div class="viz-tabs">
+        <button class="viz-tab active" data-viz="topology">🗺 Architecture</button>
+        <button class="viz-tab" data-viz="metrics">📊 Metrics</button>
+        <button class="viz-tab" data-viz="security">🛡 Security</button>
+        <button class="viz-tab" data-viz="cost">💰 Cost</button>
+      </div>
+
+      <!-- ARCHITECTURE TOPOLOGY VIEW -->
+      <div class="viz-view active" id="viz-topology">
+        <div class="topology-canvas" id="topology-canvas">
+
+          <!-- Internet / User -->
+          <div class="topo-node topo-user" id="node-user">
+            <div class="node-icon">🌍</div>
+            <div class="node-label">Internet Users</div>
+          </div>
+
+          <!-- CloudFront -->
+          <div class="topo-node topo-cdn" id="node-cdn">
+            <div class="node-icon">☁️</div>
+            <div class="node-label">CloudFront CDN</div>
+            <div class="node-sub">+ S3 Static Bucket</div>
+            <div class="node-badge badge-green">Active</div>
+          </div>
+
+          <!-- VPC Container -->
+          <div class="vpc-container" id="vpc-container">
+            <div class="vpc-label">Amazon VPC <span class="vpc-cidr">10.0.0.0/16</span></div>
+
+            <!-- Public Subnet: ALB -->
+            <div class="subnet-zone subnet-public" id="subnet-public">
+              <div class="subnet-label">Public Subnets — AZ-1a &amp; AZ-1b</div>
+              <div class="topo-node topo-alb" id="node-alb">
+                <div class="node-icon">⚖️</div>
+                <div class="node-label">App Load Balancer</div>
+                <div class="node-badge badge-green">Healthy</div>
+              </div>
+            </div>
+
+            <!-- Private App Subnet: EC2 ASG -->
+            <div class="subnet-zone subnet-app" id="subnet-app">
+              <div class="subnet-label">Private Subnets — Application Tier</div>
+              <div class="ec2-cluster" id="ec2-cluster">
+                <div class="topo-node topo-ec2" id="node-ec2-0" data-index="0">
+                  <div class="node-icon">🖥</div>
+                  <div class="node-label">EC2 Instance 1</div>
+                  <div class="cpu-bar"><div class="cpu-fill" id="cpu-fill-0"></div></div>
+                  <div class="node-badge badge-green">Running</div>
+                </div>
+                <div class="topo-node topo-ec2" id="node-ec2-1" data-index="1">
+                  <div class="node-icon">🖥</div>
+                  <div class="node-label">EC2 Instance 2</div>
+                  <div class="cpu-bar"><div class="cpu-fill" id="cpu-fill-1"></div></div>
+                  <div class="node-badge badge-green">Running</div>
+                </div>
+              </div>
+              <div class="asg-label" id="asg-label">Auto Scaling Group (min: 1 / desired: 1 / max: 2)</div>
+            </div>
+
+            <!-- Private DB Subnet: RDS -->
+            <div class="subnet-zone subnet-db" id="subnet-db">
+              <div class="subnet-label">Private Subnets — Data Tier</div>
+              <div class="rds-cluster">
+                <div class="topo-node topo-rds" id="node-rds-primary">
+                  <div class="node-icon">🗄</div>
+                  <div class="node-label">RDS MySQL (Primary)</div>
+                  <div class="node-sub" id="rds-az-label">AZ-1a</div>
+                  <div class="node-badge badge-green">Available</div>
+                </div>
+                <div class="topo-node topo-rds rds-standby" id="node-rds-standby" style="display:none">
+                  <div class="node-icon">🗄</div>
+                  <div class="node-label">RDS Standby</div>
+                  <div class="node-sub">AZ-1b (Sync Replica)</div>
+                  <div class="node-badge badge-blue">Standby</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CloudWatch -->
+          <div class="topo-node topo-monitor" id="node-monitor">
+            <div class="node-icon">📡</div>
+            <div class="node-label">CloudWatch</div>
+            <div class="node-sub">Metrics &amp; Alarms</div>
+          </div>
+
+          <!-- Traffic Particles Container -->
+          <div id="particles-container"></div>
+
+          <!-- AZ Outage Overlay -->
+          <div class="az-outage-overlay" id="az-outage" style="display:none">
+            <div class="outage-badge">⚠ AZ-1a OUTAGE — Failover in progress...</div>
+          </div>
+        </div>
+
+        <!-- Chaos Controls -->
+        <div class="chaos-controls">
+          <button class="btn btn-sm btn-chaos-az" id="btn-az-outage">⚡ Simulate AZ Outage</button>
+          <button class="btn btn-sm btn-chaos-crash" id="btn-crash-ec2">💥 Crash EC2 Node</button>
+          <button class="btn btn-sm btn-traffic" id="btn-traffic">🌊 Simulate Traffic</button>
+          <button class="btn btn-sm btn-reset-chaos" id="btn-reset-chaos">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- METRICS VIEW -->
+      <div class="viz-view" id="viz-metrics">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-title">EC2 CPU Utilization</div>
+            <div class="metric-value" id="metric-cpu">--</div>
+            <div class="metric-bar-wrap"><div class="metric-bar" id="mbar-cpu"></div></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">ALB Request Count</div>
+            <div class="metric-value" id="metric-req">--</div>
+            <div class="metric-sub">requests / min</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">ALB Response Time</div>
+            <div class="metric-value" id="metric-latency">--</div>
+            <div class="metric-sub">milliseconds avg</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">RDS Connections</div>
+            <div class="metric-value" id="metric-db">--</div>
+            <div class="metric-sub">active connections</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">ASG Instance Count</div>
+            <div class="metric-value" id="metric-instances">1</div>
+            <div class="metric-sub">running instances</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Uptime</div>
+            <div class="metric-value" id="metric-uptime">00:00:00</div>
+            <div class="metric-sub">since last apply</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY AUDIT VIEW -->
+      <div class="viz-view" id="viz-security">
+        <div class="security-header">
+          <div class="sec-score-big" id="sec-score-big">A+</div>
+          <div class="sec-score-label">Security Score: <span id="sec-score-num">98</span>/100</div>
+        </div>
+        <div class="sec-rules" id="sec-rules"></div>
+      </div>
+
+      <!-- COST BREAKDOWN VIEW -->
+      <div class="viz-view" id="viz-cost">
+        <div class="cost-header">
+          <div class="cost-total-big">$<span id="cost-total-big">0.00</span></div>
+          <div class="cost-total-label">Estimated monthly cost</div>
+          <div class="cost-tier-badge" id="cost-tier-badge">✅ 100% AWS Free Tier</div>
+        </div>
+        <div class="cost-breakdown" id="cost-breakdown"></div>
+        <div class="cost-footer">
+          <small>💡 Run <code>terraform destroy</code> after each session to guarantee $0 billing.</small>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- REPORT MODAL -->
+  <div class="modal-overlay" id="modal-overlay" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>📄 Project Review Summary</h2>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-apply" id="btn-copy-report">📋 Copy to Clipboard</button>
+        <button class="btn btn-ghost" id="modal-close2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

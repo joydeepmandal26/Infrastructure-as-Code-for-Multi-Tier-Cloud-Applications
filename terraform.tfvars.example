@@ -1,0 +1,34 @@
+# ================================================
+# Copy this file to terraform.tfvars and fill in
+# your values before running terraform apply.
+# NEVER commit terraform.tfvars to Git!
+# ================================================
+
+# General
+aws_region   = "us-east-1"
+environment  = "dev"
+project_name = "iac-multitier"
+
+# Networking — cost_optimized_mode=true eliminates NAT Gateway ($0/mo)
+cost_optimized_mode = true
+
+# Compute — t2.micro = Free Tier, desired=1 stays within 750 free hrs/mo
+ec2_instance_type          = "t2.micro"
+app_instance_count_min     = 1
+app_instance_count_desired = 1
+app_instance_count_max     = 2
+app_port                   = 3000
+
+# Database — db.t3.micro + 20GB = Free Tier, multi_az=false keeps cost at $0
+db_engine            = "mysql"
+db_engine_version    = "8.0"
+db_instance_class    = "db.t3.micro"
+db_allocated_storage = 20
+db_name              = "appdb"
+db_username          = "admin"
+db_password          = "CHANGE_ME_min8chars!"   # <-- Replace this!
+multi_az             = false
+
+# Monitoring
+alert_email         = "your@email.com"          # <-- Replace with your email
+cpu_alarm_threshold = 70

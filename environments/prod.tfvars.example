@@ -1,0 +1,13 @@
+# PROD Environment — High Availability Multi-AZ
+# NOTE: This configuration exceeds AWS Free Tier (~$24-39/mo on real AWS)
+# Use only when deploying to a paid production account
+environment                = "prod"
+cost_optimized_mode        = false
+ec2_instance_type          = "t3.small"
+app_instance_count_min     = 2
+app_instance_count_desired = 2
+app_instance_count_max     = 4
+db_instance_class          = "db.t3.micro"
+db_allocated_storage       = 20
+multi_az                   = true
+cpu_alarm_threshold        = 60

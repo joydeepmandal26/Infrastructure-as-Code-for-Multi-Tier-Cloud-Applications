@@ -1,0 +1,58 @@
+# ========================
+# Terraform
+# ========================
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# ========================
+# Sensitive Variables (NEVER commit these)
+# ========================
+*.tfvars
+!*.tfvars.example
+terraform.tfvars
+terraform.tfvars.json
+secrets.tfvars
+environments/*.tfvars
+!environments/*.tfvars.example
+
+# ========================
+# AWS Credentials
+# ========================
+*.csv
+.aws/
+credentials
+*.pem
+*.key
+
+# ========================
+# Node.js (Studio)
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+dist/
+.env
+.env.local
+
+# ========================
+# OS / Editor
+# ========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/settings.json
+.idea/
