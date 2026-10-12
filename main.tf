@@ -55,7 +55,7 @@ module "compute" {
   environment                = var.environment
   vpc_id                     = module.vpc.vpc_id
   public_subnet_ids          = module.vpc.public_subnet_ids
-  private_app_subnet_ids     = module.vpc.private_app_subnet_ids
+  private_app_subnet_ids     = var.cost_optimized_mode ? module.vpc.public_subnet_ids : module.vpc.private_app_subnet_ids
   alb_security_group_id      = module.security_groups.alb_sg_id
   ec2_security_group_id      = module.security_groups.ec2_sg_id
   ec2_instance_type          = var.ec2_instance_type
@@ -90,16 +90,7 @@ module "rds" {
   multi_az              = var.multi_az
 }
 
-# ========================
-# Presentation Tier (S3 + CloudFront)
-# ========================
-module "frontend" {
-  source = "./modules/frontend"
 
-  project_name = var.project_name
-  environment  = var.environment
-  alb_dns_name = module.compute.alb_dns_name
-}
 
 # ========================
 # Monitoring (CloudWatch)

@@ -6,15 +6,16 @@ set -e
 # Auto-runs on every new EC2 instance launched by the ASG
 # ============================================================
 
-# System update
-yum update -y
-
-# Install Node.js 18
-curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
-yum install -y nodejs git
+# Install Node.js & git
+yum install -y git
+if ! command -v node &> /dev/null; then
+  curl -fsSL https://nodejs.org/dist/v16.20.2/node-v16.20.2-linux-x64.tar.gz | tar -xz -C /usr/local --strip-components=1 || true
+fi
+ln -sf /usr/local/bin/node /usr/bin/node || true
+ln -sf /usr/local/bin/npm /usr/bin/npm || true
 
 # Install MySQL client (for connectivity testing)
-yum install -y mysql
+yum install -y mysql || true
 
 # Create application directory
 mkdir -p /opt/app
@@ -95,7 +96,7 @@ app.get('/api/data', async (req, res) => {
 });
 
 app.listen(process.env.APP_PORT || 3000, () => {
-  console.log(`[IaC Demo] Backend running on port ${process.env.APP_PORT || 3000}`);
+  console.log(`[IaC Demo] Backend running on port $${process.env.APP_PORT || 3000}`);
 });
 APPJS
 

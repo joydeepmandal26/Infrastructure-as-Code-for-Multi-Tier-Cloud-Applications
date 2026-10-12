@@ -63,7 +63,7 @@ variable "cost_optimized_mode" {
 variable "ec2_instance_type" {
   description = "EC2 instance type for application servers"
   type        = string
-  default     = "t2.micro" # Free tier eligible
+  default     = "t3.micro" # Free tier eligible
 }
 
 variable "app_instance_count_min" {

@@ -1,7 +1,3 @@
-output "cloudfront_domain_name" {
-  description = "CloudFront distribution URL for the static frontend (Presentation Tier)"
-  value       = module.frontend.cloudfront_domain_name
-}
 
 output "alb_dns_name" {
   description = "Application Load Balancer DNS (Application Tier entry point)"
@@ -35,8 +31,8 @@ output "private_db_subnet_ids" {
 }
 
 output "application_url" {
-  description = "Full HTTPS URL to access the deployed application"
-  value       = "https://${module.frontend.cloudfront_domain_name}"
+  description = "Application URL (Direct to ALB)"
+  value       = "http://${module.compute.alb_dns_name}"
 }
 
 output "cloudwatch_dashboard_url" {

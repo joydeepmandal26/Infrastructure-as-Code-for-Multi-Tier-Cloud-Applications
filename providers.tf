@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.5.0"
+  required_version = ">= 1.16.5"
 
   required_providers {
     aws = {
@@ -17,7 +17,7 @@ provider "aws" {
       Project     = "IaC-MultiTier"
       Environment = var.environment
       ManagedBy   = "Terraform"
-      Team        = "26MCA-CloudComputing"
+      Team        = "Joydeep_Vikash_Deepak"
     }
   }
 }
